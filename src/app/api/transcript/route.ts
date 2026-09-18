@@ -52,7 +52,11 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json(
-      { error: errorMessage },
+      { 
+        error: errorMessage,
+        debug_message: error.message,
+        debug_stack: error.stack
+      },
       { status: 500 }
     );
   }
