@@ -15,12 +15,11 @@ export async function POST(req: Request) {
       );
     }
 
-    // Use a custom fetch to override the hardcoded, outdated User-Agent in youtube-transcript
-    // This helps prevent YouTube from blocking the request on Vercel.
     const customFetch = (fetchUrl: RequestInfo | URL, options?: RequestInit) => {
       if (options && options.headers) {
         (options.headers as Record<string, string>)['User-Agent'] = 
           'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36';
+        (options.headers as Record<string, string>)['Cookie'] = 'CONSENT=YES+cb; SOCS=CAI;';
       }
       return fetch(fetchUrl, options);
     };
