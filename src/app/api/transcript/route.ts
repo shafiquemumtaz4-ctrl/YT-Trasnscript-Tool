@@ -3,15 +3,6 @@ import { YoutubeTranscript } from "youtube-transcript";
 
 export const dynamic = "force-dynamic";
 
-import fetch from "node-fetch";
-import { HttpsProxyAgent } from "https-proxy-agent";
-
-// Use environment variable for the proxy URL to keep credentials secure!
-// On Vercel, go to Settings -> Environment Variables and add PROXY_URL:
-// http://ptaaxfit:8dgds2w1dwhy@31.59.20.176:6754
-const proxyUrl = process.env.PROXY_URL || "http://ptaaxfit:8dgds2w1dwhy@31.59.20.176:6754";
-const agent = proxyUrl ? new HttpsProxyAgent(proxyUrl) : undefined;
-
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -26,7 +17,7 @@ export async function POST(req: Request) {
 
     const customFetch = (fetchUrl: RequestInfo | URL, options?: RequestInit) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const newOptions: RequestInit & { agent?: any } = { ...options };
+      const newOptions: RequestInit = { ...options };
       newOptions.headers = {
         ...newOptions.headers,
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
@@ -34,17 +25,10 @@ export async function POST(req: Request) {
         'Cookie': 'CONSENT=YES+cb; SOCS=CAI;'
       };
       
-      // Attach the proxy agent
-      if (agent) {
-        newOptions.agent = agent;
-      }
-      
-      // @ts-ignore - node-fetch types mismatch with native fetch
       return fetch(fetchUrl, newOptions);
     };
 
     // Try fetching the transcript
-    // @ts-ignore - node-fetch types mismatch with native fetch
     const transcript = await YoutubeTranscript.fetchTranscript(url, { fetch: customFetch });
 
     if (!transcript || transcript.length === 0) {
