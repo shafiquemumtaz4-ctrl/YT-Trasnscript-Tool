@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { YoutubeTranscript } from "youtube-transcript";
 
-export const runtime = "edge";
+export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   try {
@@ -16,12 +16,19 @@ export async function POST(req: Request) {
     }
 
     const customFetch = (fetchUrl: RequestInfo | URL, options?: RequestInit) => {
-      if (options && options.headers) {
-        (options.headers as Record<string, string>)['User-Agent'] = 
-          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36';
-        (options.headers as Record<string, string>)['Cookie'] = 'CONSENT=YES+cb; SOCS=CAI;';
-      }
-      return fetch(fetchUrl, options);
+      const newOptions = { ...options };
+      const headers = new Headers(newOptions.headers || {});
+      
+      headers.set('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36');
+      headers.set('Accept-Language', 'en-US,en;q=0.9');
+      headers.set('Cookie', 'CONSENT=YES+cb; SOCS=CAI;');
+      
+      newOptions.headers = headers;
+      
+      // Vercel serverless functions shouldn't cache this request
+      newOptions.cache = 'no-store';
+      
+      return fetch(fetchUrl, newOptions);
     };
 
     // Try fetching the transcript
