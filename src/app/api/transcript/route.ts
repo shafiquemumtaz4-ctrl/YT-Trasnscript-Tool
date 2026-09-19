@@ -24,8 +24,9 @@ export async function POST(req: Request) {
       );
     }
 
-    const customFetch = (fetchUrl: any, options?: any) => {
-      const newOptions = { ...options };
+    const customFetch = (fetchUrl: RequestInfo | URL, options?: RequestInit) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const newOptions: RequestInit & { agent?: any } = { ...options };
       newOptions.headers = {
         ...newOptions.headers,
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
@@ -52,12 +53,16 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ transcript }, { status: 200 });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error fetching transcript:", error);
     
     let errorMessage = "Failed to fetch transcript. The video might not have captions enabled or is private.";
+    let debugMessage = "Unknown error";
+    let debugStack = "";
     
-    if (error.message) {
+    if (error instanceof Error) {
+      debugMessage = error.message;
+      debugStack = error.stack || "";
       if (error.message.includes("Could not find captions")) {
         errorMessage = "Captions are disabled or unavailable for this video.";
       } else if (error.message.includes("Video unavailable")) {
@@ -70,8 +75,8 @@ export async function POST(req: Request) {
     return NextResponse.json(
       { 
         error: errorMessage,
-        debug_message: error.message,
-        debug_stack: error.stack
+        debug_message: debugMessage,
+        debug_stack: debugStack
       },
       { status: 500 }
     );
