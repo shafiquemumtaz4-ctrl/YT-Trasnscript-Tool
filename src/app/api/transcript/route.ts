@@ -39,10 +39,12 @@ export async function POST(req: Request) {
         newOptions.agent = agent;
       }
       
+      // @ts-ignore - node-fetch types mismatch with native fetch
       return fetch(fetchUrl, newOptions);
     };
 
     // Try fetching the transcript
+    // @ts-ignore - node-fetch types mismatch with native fetch
     const transcript = await YoutubeTranscript.fetchTranscript(url, { fetch: customFetch });
 
     if (!transcript || transcript.length === 0) {
