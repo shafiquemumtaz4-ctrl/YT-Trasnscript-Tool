@@ -3,6 +3,15 @@ import { YoutubeTranscript } from "youtube-transcript";
 
 export const dynamic = "force-dynamic";
 
+import fetch from "node-fetch";
+import { HttpsProxyAgent } from "https-proxy-agent";
+
+// Use environment variable for the proxy URL to keep credentials secure!
+// On Vercel, go to Settings -> Environment Variables and add PROXY_URL:
+// http://ptaaxfit:8dgds2w1dwhy@31.59.20.176:6754
+const proxyUrl = process.env.PROXY_URL || "http://ptaaxfit:8dgds2w1dwhy@31.59.20.176:6754";
+const agent = proxyUrl ? new HttpsProxyAgent(proxyUrl) : undefined;
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -15,18 +24,19 @@ export async function POST(req: Request) {
       );
     }
 
-    const customFetch = (fetchUrl: RequestInfo | URL, options?: RequestInit) => {
+    const customFetch = (fetchUrl: any, options?: any) => {
       const newOptions = { ...options };
-      const headers = new Headers(newOptions.headers || {});
+      newOptions.headers = {
+        ...newOptions.headers,
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Cookie': 'CONSENT=YES+cb; SOCS=CAI;'
+      };
       
-      headers.set('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36');
-      headers.set('Accept-Language', 'en-US,en;q=0.9');
-      headers.set('Cookie', 'CONSENT=YES+cb; SOCS=CAI;');
-      
-      newOptions.headers = headers;
-      
-      // Vercel serverless functions shouldn't cache this request
-      newOptions.cache = 'no-store';
+      // Attach the proxy agent
+      if (agent) {
+        newOptions.agent = agent;
+      }
       
       return fetch(fetchUrl, newOptions);
     };
